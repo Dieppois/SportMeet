@@ -12,7 +12,7 @@ export type CreateGroupInput = {
 
 export async function createGroup(userId: number, data: CreateGroupInput) {
   const [res] = await pool.query(
-    "INSERT INTO groups (name, description, city, sport_id, level, visibility, max_members, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?, ?, NOW(), NOW())",
+    "INSERT INTO `groups` (name, description, city, sport_id, level, visibility, max_members, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?, ?, NOW(), NOW())",
     [
       data.name,
       data.description || null,
@@ -35,7 +35,7 @@ export async function createGroup(userId: number, data: CreateGroupInput) {
 
 export async function getGroupById(groupId: number) {
   const [rows] = await pool.query(
-    "SELECT g.*, s.name as sport_name FROM groups g JOIN sports s ON g.sport_id = s.id WHERE g.id = ?",
+    "SELECT g.*, s.name as sport_name FROM `groups` g JOIN sports s ON g.sport_id = s.id WHERE g.id = ?",
     [groupId]
   );
   const list = rows as any[];
@@ -57,7 +57,7 @@ export async function searchGroups(params: { sport_id?: number; level?: string; 
     where.push("g.city = ?");
     values.push(params.city);
   }
-  const sql = `SELECT g.*, s.name as sport_name, (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id AND gm.status='active') as members_count FROM groups g JOIN sports s ON g.sport_id = s.id ${
+  const sql = `SELECT g.*, s.name as sport_name, (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id AND gm.status='active') as members_count FROM \`groups\` g JOIN sports s ON g.sport_id = s.id ${
     where.length ? "WHERE " + where.join(" AND ") : ""
   } ORDER BY g.created_at DESC LIMIT 50`;
   const [rows] = await pool.query(sql, values);
@@ -67,7 +67,7 @@ export async function searchGroups(params: { sport_id?: number; level?: string; 
 export async function joinGroup(userId: number, groupId: number) {
   // check capacity if max_members
   const [rows] = await pool.query(
-    "SELECT max_members FROM groups WHERE id = ?",
+    "SELECT max_members FROM `groups` WHERE id = ?",
     [groupId]
   );
   const list = rows as any[];

@@ -1,25 +1,57 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { getAllGroups } from "../services/localGroupService";
+import { groupsApi, type Group } from "../services/api";
 
-const ALL_GROUPS = getAllGroups();
+const LEVEL_LABELS: Record<string, string> = {
+  debutant: "Debutant",
+  intermediaire: "Intermediaire",
+  expert: "Expert",
+};
 
 export function LandingPage() {
   const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [sportFilter, setSportFilter] = useState("");
   const [visibleCount, setVisibleCount] = useState(6);
 
-  const filteredGroups = ALL_GROUPS.filter((group) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsLoadingGroups(true);
+      groupsApi
+        .search({})
+        .then(setGroups)
+        .catch(() => setGroups([]))
+        .finally(() => setIsLoadingGroups(false));
+    }
+  }, [isAuthenticated]);
+
+  const filteredGroups = groups.filter((group) => {
     if (!sportFilter.trim()) return true;
-    return group.sport.toLowerCase().includes(sportFilter.toLowerCase());
+    const sportName = group.sport_name || "";
+    return sportName.toLowerCase().includes(sportFilter.toLowerCase());
   });
 
   const visibleGroups = filteredGroups.slice(0, visibleCount);
   const canShowMore = visibleCount < filteredGroups.length;
+
+  const handleJoinGroup = async (groupId: number) => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    try {
+      await groupsApi.join(groupId);
+      navigate(`/groups/${groupId}`);
+    } catch (e: any) {
+      alert(e.message || "Impossible de rejoindre le groupe.");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-(--color-bg) text-(--color-text-main)">
@@ -40,29 +72,29 @@ export function LandingPage() {
           </div>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <button type="button" className="btn btn-ghost">
-              Fonctionnalités
-            </button>
-            <button type="button" className="btn btn-ghost">
-              Comment ça marche
-            </button>
-            <button type="button" className="btn btn-ghost">
-              Tarifs
-            </button>
+            <Link to="/groups" className="btn btn-ghost">
+              Groupes
+            </Link>
+            <Link to="/users" className="btn btn-ghost">
+              Joueurs
+            </Link>
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
             {isAuthenticated ? (
               <>
-                <span className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-soft)">
+                <Link
+                  to="/profile"
+                  className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-soft) hover:border-(--color-border-strong)"
+                >
                   {user?.pseudo ?? "Mon compte"}
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={logout}
                   className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-main) shadow-sm hover:border-(--color-border-strong) hover:bg-(--color-surface-light)"
                 >
-                  Déconnexion
+                  Deconnexion
                 </button>
               </>
             ) : (
@@ -74,7 +106,7 @@ export function LandingPage() {
                   Connexion
                 </Link>
                 <Link to="/signup" className="button-primary px-6 py-2 text-sm">
-                  Créer un compte
+                  Creer un compte
                 </Link>
               </>
             )}
@@ -85,7 +117,7 @@ export function LandingPage() {
       {/* Hero + preview */}
       <section className="mx-auto max-w-6xl px-(--space-4) pb-(--space-8) pt-(--space-5) sm:px-(--space-6) lg:px-(--space-8) lg:pb-(--space-10) lg:pt-(--space-6)">
         <div className="flex flex-col items-stretch gap-(--space-6) lg:flex-row lg:items-center lg:gap-(--space-8)">
-          {/* Texte à gauche */}
+          {/* Texte a gauche */}
           <div className="flex-1 space-y-8">
             <div className="space-y-4">
               <h1 className="text-balance font-semibold tracking-tight text-(--color-text-main) text-3xl sm:text-4xl lg:text-5xl">
@@ -97,16 +129,17 @@ export function LandingPage() {
                 </span>
               </h1>
               <p className="max-w-xl text-balance text-(--color-text-soft) sm:text-(--font-size-base)">
-                Sport Matcher te connecte instantanément avec des joueurs
+                Sport Matcher te connecte instantanement avec des joueurs
                 compatibles autour de toi selon le sport, le niveau, la
-                disponibilité et même ton style de jeu. Idéal pour imaginer un
-                parcours fluide entre découverte, matching et chat en temps réel.
+                disponibilite et meme ton style de jeu.
               </p>
-              <button className="btn btn-primary">Je cherche un match</button>
+              <Link to="/groups" className="btn btn-primary inline-block">
+                Decouvrir les groupes
+              </Link>
             </div>
           </div>
 
-          {/* Image à droite */}
+          {/* Image a droite */}
           <div className="flex-1">
             <img
               src="/hero_img.jpg"
@@ -123,15 +156,15 @@ export function LandingPage() {
         <div className="grid gap-(--space-3) md:grid-cols-3">
           <div className="group rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) shadow-sm hover:border-(--color-primary) hover:shadow-(--shadow-primary-soft)">
             <p className="mb-(--space-1) text-(--font-size-xs) font-semibold uppercase tracking-[0.18em]">
-              Découverte
+              Decouverte
             </p>
             <h2 className="mb-(--space-1) font-semibold text-(--color-text-main)">
               Trouve des partenaires en quelques secondes
             </h2>
             <p className="text-(--color-text-muted)">
-              Flow de filtres simple (sport, niveau, créneaux, localisation)
+              Flow de filtres simple (sport, niveau, creneaux, localisation)
               pour afficher des cards de matchs ultra lisibles avec photo,
-              distance et taux de compatibilité.
+              distance et taux de compatibilite.
             </p>
           </div>
 
@@ -140,11 +173,11 @@ export function LandingPage() {
               Matching
             </p>
             <h2 className="mb-(--space-1) font-semibold text-(--color-text-main)">
-              Algorithme par affinités sportives
+              Algorithme par affinites sportives
             </h2>
             <p className="text-(--color-text-muted)">
-              Écrans dédiés pour paramétrer ton profil joueur : sports favoris,
-              intensité, objectifs (perf, fun, compétition) et rythme de jeu,
+              Ecrans dedies pour parametrer ton profil joueur : sports favoris,
+              intensite, objectifs (perf, fun, competition) et rythme de jeu,
               afin d'affiner les suggestions.
             </p>
           </div>
@@ -154,24 +187,25 @@ export function LandingPage() {
               Conversation
             </p>
             <h2 className="mb-(--space-1) font-semibold text-(--color-text-main)">
-              Chat clair et orienté organisation
+              Chat clair et oriente organisation
             </h2>
             <p className="text-(--color-text-muted)">
-              Interface de chat inspirée des messageries modernes avec
-              récapitulatif du match, boutons rapides (confirmer, décaler,
-              annuler) et accès direct au lieu.
+              Interface de chat inspiree des messageries modernes avec
+              recapitulatif du match, boutons rapides (confirmer, decaler,
+              annuler) et acces direct au lieu.
             </p>
           </div>
         </div>
       </section>
+
       <section className="mx-auto max-w-6xl px-(--space-4) pb-(--space-8) sm:px-(--space-6) lg:px-(--space-8)">
         <div className="mb-(--space-3) flex items-center justify-between">
           <div>
             <h2 className="text-(--font-size-lg) font-semibold">
-              Vos groupes
+              Groupes disponibles
             </h2>
             <p className="text-(--color-text-muted)">
-              Découvre des groupes par sport et par niveau pour trouver rapidement
+              Decouvre des groupes par sport et par niveau pour trouver rapidement
               des partenaires de jeu.
             </p>
           </div>
@@ -185,9 +219,21 @@ export function LandingPage() {
         </div>
 
         {!isAuthenticated ? (
-          <p className="text-(--color-text-muted)">
-            Connecte-toi ou crée un compte pour découvrir les groupes proposés.
-          </p>
+          <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-4) text-center">
+            <p className="text-(--color-text-muted) mb-(--space-2)">
+              Connecte-toi ou cree un compte pour decouvrir les groupes proposes.
+            </p>
+            <div className="flex justify-center gap-(--space-2)">
+              <Link to="/login" className="btn btn-secondary btn-sm">
+                Connexion
+              </Link>
+              <Link to="/signup" className="btn btn-primary btn-sm">
+                Creer un compte
+              </Link>
+            </div>
+          </div>
+        ) : isLoadingGroups ? (
+          <p className="text-(--color-text-muted)">Chargement des groupes...</p>
         ) : (
           <>
             {showFilters ? (
@@ -199,14 +245,14 @@ export function LandingPage() {
                   value={sportFilter}
                   onChange={(event) => setSportFilter(event.target.value)}
                   className="w-full max-w-xs rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(--font-size-sm) outline-none focus:border-(--color-primary)"
-                  placeholder="Ex : Handball, Football, Tennis…"
+                  placeholder="Ex : Handball, Football, Tennis..."
                 />
               </div>
             ) : null}
 
             {visibleGroups.length === 0 ? (
               <p className="text-(--color-text-muted)">
-                Aucun groupe ne correspond à ce filtre pour le moment.
+                Aucun groupe ne correspond a ce filtre pour le moment.
               </p>
             ) : (
               <>
@@ -217,20 +263,27 @@ export function LandingPage() {
                       className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-1)"
                     >
                       <h3 className="text-(--font-size-sm) font-semibold">
-                        {group.sport} · {group.level}
+                        {group.sport_name || `Sport #${group.sport_id}`} ·{" "}
+                        {LEVEL_LABELS[group.level] || group.level}
                       </h3>
                       <p className="text-(--color-text-muted)">
-                        {group.city
-                          ? `${group.city} · ${group.membersCount} membres`
-                          : `${group.membersCount} membres`}
+                        {group.city} · {group.members_count || 0} membres
                       </p>
-                      <p className="text-(--color-text-soft)">{group.description}</p>
+                      <p className="text-(--color-text-soft)">
+                        {group.description || "Pas de description"}
+                      </p>
                       <div className="mt-(--space-2) flex justify-between gap-(--space-2)">
+                        <button
+                          onClick={() => handleJoinGroup(group.id)}
+                          className="btn btn-primary btn-sm"
+                        >
+                          Rejoindre
+                        </button>
                         <Link
                           to={`/groups/${group.id}`}
-                          className="button-primary text-(--font-size-xs) px-4"
+                          className="btn btn-secondary btn-sm"
                         >
-                          Rejoindre le groupe
+                          Voir le detail
                         </Link>
                       </div>
                     </article>

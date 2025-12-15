@@ -43,7 +43,7 @@ export async function getActivityById(id: number) {
       (SELECT COUNT(*) FROM activity_participants ap WHERE ap.activity_id = a.id AND ap.status='registered') as registered_count
      FROM activities a
      JOIN sports s ON s.id = a.sport_id
-     JOIN groups g ON g.id = a.group_id
+     JOIN \`groups\` g ON g.id = a.group_id
      WHERE a.id = ?`,
     [id]
   );

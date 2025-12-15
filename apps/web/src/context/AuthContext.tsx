@@ -9,25 +9,22 @@ import {
 } from "react";
 
 import {
-  authenticateUser,
-  createUser,
-  getCurrentUser,
-  logoutUser,
-  type CreateUserInput,
+  authApi,
+  usersApi,
+  setToken,
+  clearToken,
   type User,
-  updateUser,
-} from "../services/localUserService";
+  type UpdateProfileInput,
+} from "../services/api";
 
 type AuthContextValue = {
   user: User | null;
   isAuthenticated: boolean;
-  signup: (input: CreateUserInput) => Promise<{ ok: boolean; error?: string }>;
-  login: (email: string, password: string) => Promise<{
-    ok: boolean;
-    error?: string;
-  }>;
+  isLoading: boolean;
+  signup: (input: { email: string; password: string; pseudo: string }) => Promise<{ ok: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
-  refreshUser: () => void;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -38,53 +35,75 @@ type AuthProviderProps = {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const existing = getCurrentUser();
-    setUser(existing);
+    const loadUser = async () => {
+      try {
+        const userData = await usersApi.getMe();
+        setUser(userData);
+      } catch {
+        clearToken();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadUser();
   }, []);
 
   const signup = useCallback(
-    async (input: CreateUserInput) => {
-      const result = createUser(input);
-      if (!result.ok) {
-        return { ok: false as const, error: result.error };
+    async (input: { email: string; password: string; pseudo: string }) => {
+      try {
+        const response = await authApi.signup(input);
+        setToken(response.token);
+        setUser(response.user as User);
+        return { ok: true as const };
+      } catch (e: any) {
+        return { ok: false as const, error: e.message || "Impossible de créer le compte." };
       }
-      setUser(result.user);
-      return { ok: true as const };
     },
-    [],
+    []
   );
 
   const login = useCallback(async (email: string, password: string) => {
-    const result = authenticateUser(email, password);
-    if (!result.ok) {
-      return { ok: false as const, error: result.error };
+    try {
+      const response = await authApi.login({ email, password });
+      setToken(response.token);
+      setUser(response.user as User);
+      return { ok: true as const };
+    } catch (e: any) {
+      return { ok: false as const, error: e.message || "Email ou mot de passe incorrect." };
     }
-    setUser(result.user);
-    return { ok: true as const };
   }, []);
 
   const logout = useCallback(() => {
-    logoutUser();
+    clearToken();
     setUser(null);
   }, []);
 
-  const refreshUser = useCallback(() => {
-    const latest = getCurrentUser();
-    setUser(latest);
+  const refreshUser = useCallback(async () => {
+    try {
+      const userData = await usersApi.getMe();
+      setUser(userData);
+    } catch {
+      clearToken();
+      setUser(null);
+    }
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
       isAuthenticated: Boolean(user),
+      isLoading,
       signup,
       login,
       logout,
       refreshUser,
     }),
-    [login, logout, refreshUser, signup, user],
+    [isLoading, login, logout, refreshUser, signup, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -102,23 +121,20 @@ export function useUpdateProfile() {
   const { user, refreshUser } = useAuth();
 
   const update = useCallback(
-    async (
-      patch: Parameters<typeof updateUser>[1],
-    ): Promise<{ ok: boolean; error?: string }> => {
+    async (patch: UpdateProfileInput): Promise<{ ok: boolean; error?: string }> => {
       if (!user) {
         return { ok: false, error: "Aucun utilisateur connecté." };
       }
-      const updated = updateUser(user.id, patch);
-      if (!updated) {
-        return { ok: false, error: "Impossible de mettre à jour le profil." };
+      try {
+        await usersApi.updateMe(patch);
+        await refreshUser();
+        return { ok: true };
+      } catch (e: any) {
+        return { ok: false, error: e.message || "Impossible de mettre à jour le profil." };
       }
-      refreshUser();
-      return { ok: true };
     },
-    [refreshUser, user],
+    [refreshUser, user]
   );
 
   return update;
 }
-
-

@@ -63,7 +63,7 @@ CREATE TABLE user_sports (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Groupes
-CREATE TABLE groups (
+CREATE TABLE `groups` (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(120) NOT NULL,
   description TEXT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE group_members (
   left_at DATETIME NULL,
   UNIQUE KEY uq_group_user (group_id, user_id),
   INDEX idx_group_members_user (user_id),
-  CONSTRAINT fk_group_member_group FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+  CONSTRAINT fk_group_member_group FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
   CONSTRAINT fk_group_member_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -113,7 +113,7 @@ CREATE TABLE activities (
   cancelled_at DATETIME NULL,
   INDEX idx_activity_group (group_id),
   INDEX idx_activity_time (start_at),
-  CONSTRAINT fk_activity_group FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+  CONSTRAINT fk_activity_group FOREIGN KEY (group_id) REFERENCES `groups`(id) ON DELETE CASCADE,
   CONSTRAINT fk_activity_sport FOREIGN KEY (sport_id) REFERENCES sports(id),
   CONSTRAINT fk_activity_creator FOREIGN KEY (created_by) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -318,7 +318,7 @@ INSERT INTO user_sports (user_id, sport_id, level) VALUES
 (3, 14, 'debutant');
 
 -- Groupes
-INSERT INTO groups (name, description, city, sport_id, level, visibility, max_members, created_by)
+INSERT INTO `groups` (name, description, city, sport_id, level, visibility, max_members, created_by)
 VALUES
 ('Foot Bordeaux Debutant', 'Matchs amicaux le soir', 'Bordeaux', 1, 'debutant', 'public', 50, 1),
 ('Tennis Bordeaux Inter', 'Partenaires tennis niveau inter', 'Bordeaux', 13, 'intermediaire', 'private', 30, 3);
