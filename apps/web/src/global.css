@@ -94,6 +94,7 @@
   --font-size-2xl: calc(var(--unit) * 3);    /* 24px */
   --font-size-3xl: calc(var(--unit) * 3.75); /* 30px */
   --font-size-4xl: calc(var(--unit) * 4.5);  /* 36px */
+  --font-size-5xl: calc(var(--unit) * 5.25); /* 42px */
 
   /* Line-height */
   --line-height-tight: 1.1;
