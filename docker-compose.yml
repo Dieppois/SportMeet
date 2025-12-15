@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: sport-matcher-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sport_matcher
+      MYSQL_USER: sport_user
+      MYSQL_PASSWORD: sport_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  db_data:
+
+
