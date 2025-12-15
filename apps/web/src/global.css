@@ -118,27 +118,139 @@ body {
   line-height: var(--line-height-normal);
 }
 
-button {
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 1.2s ease;
+/* ========== BUTTON SYSTEM ========== */
+/* Variables CSS pour les boutons (modifiables facilement) */
+:root {
+  /* Tailles - toutes en rem, divisibles par 4px (0.25rem) */
+  --btn-px-sm: 0.75rem;      /* 12px */
+  --btn-py-sm: 0.5rem;       /* 8px */
+  --btn-px-md: 1rem;         /* 16px */
+  --btn-py-md: 0.5rem;       /* 8px */
+  --btn-px-lg: 1.5rem;       /* 24px */
+  --btn-py-lg: 0.75rem;      /* 12px */
+
+  /* Border radius */
+  --btn-radius: 1rem;        /* 16px */
+  --btn-radius-full: 9999px;
+
+  /* Font sizes */
+  --btn-font-sm: 0.75rem;    /* 12px */
+  --btn-font-md: 0.875rem;   /* 14px */
+  --btn-font-lg: 1rem;       /* 16px */
+
+  /* Gap (pour icônes) */
+  --btn-gap: 0.5rem;         /* 8px */
+
+  /* Transition */
+  --btn-transition: 300ms ease;
 }
 
-/* Composant bouton principal */
+/* ========== BASE BUTTON ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--btn-gap);
+  padding: var(--btn-py-md) var(--btn-px-md);
+  border-radius: var(--btn-radius);
+  font-size: var(--btn-font-md);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--btn-transition);
+  border: 1px solid transparent;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== BUTTON VARIANTS ========== */
+
+/* Primary - Bouton principal (orange) */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+  box-shadow: var(--shadow-primary);
+}
+
+/* Secondary - Bouton secondaire (bordure) */
+.btn-secondary {
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  border-color: var(--color-border-subtle);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-light);
+}
+
+/* Ghost - Bouton texte seul (navigation) */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-text-soft);
+  border-color: transparent;
+  padding: var(--btn-py-sm) var(--btn-px-sm);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--color-text-main);
+}
+
+/* ========== BUTTON SIZES ========== */
+
+/* Small */
+.btn-sm {
+  padding: var(--btn-py-sm) var(--btn-px-sm);
+  font-size: var(--btn-font-sm);
+}
+
+/* Medium (default) - déjà appliqué dans .btn */
+
+/* Large */
+.btn-lg {
+  padding: var(--btn-py-lg) var(--btn-px-lg);
+  font-size: var(--btn-font-lg);
+}
+
+/* ========== BUTTON MODIFIERS ========== */
+
+/* Full width */
+.btn-full {
+  width: 100%;
+}
+
+/* Pill shape (pour header/nav) */
+.btn-pill {
+  border-radius: var(--btn-radius-full);
+}
+
+/* ========== LEGACY SUPPORT ========== */
+/* Conservé pour compatibilité - utiliser .btn .btn-primary à la place */
 .button-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  padding: calc(var(--unit) * 2) calc(var(--unit) * 4);
-  border-radius: 1rem;
+  gap: var(--btn-gap);
+  padding: var(--btn-py-md) var(--btn-px-md);
+  border-radius: var(--btn-radius);
   background-color: var(--color-primary);
   color: #ffffff;
+  font-size: var(--btn-font-md);
   font-weight: var(--font-weight-semibold);
   border: 1px solid var(--color-primary);
   white-space: nowrap;
   text-decoration: none;
-  transition: all 1.2s ease;
+  cursor: pointer;
+  transition: all var(--btn-transition);
 }
 
 .button-primary:hover {

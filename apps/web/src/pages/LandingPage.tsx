@@ -39,14 +39,14 @@ export function LandingPage() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-8 text-sm text-(--color-text-soft) md:flex">
-            <button type="button" className="hover:text-(--color-text-main)">
+          <nav className="hidden items-center gap-8 md:flex">
+            <button type="button" className="btn btn-ghost">
               Fonctionnalités
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Comment ça marche
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Tarifs
             </button>
           </nav>
@@ -102,7 +102,7 @@ export function LandingPage() {
                 disponibilité et même ton style de jeu. Idéal pour imaginer un
                 parcours fluide entre découverte, matching et chat en temps réel.
               </p>
-              <button className="button-primary">Je cherche un match</button>
+              <button className="btn btn-primary">Je cherche un match</button>
             </div>
           </div>
 

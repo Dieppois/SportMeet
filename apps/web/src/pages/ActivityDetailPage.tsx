@@ -47,7 +47,7 @@ export function ActivityDetailPage() {
           <p className="text-(length:--font-size-sm)">
             Activité introuvable ou déjà supprimée.
           </p>
-          <Link to="/" className="button-primary justify-center">
+          <Link to="/" className="btn btn-primary">
             Retour à l&apos;accueil
           </Link>
         </div>
@@ -99,7 +99,7 @@ export function ActivityDetailPage() {
           <div className="flex gap-(--space-2)">
             <button
               type="button"
-              className="rounded-2xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-3) py-(--space-1) text-(length:--font-size-xs)"
+              className="btn btn-secondary btn-sm"
               onClick={handleBack}
             >
               Retour à l&apos;accueil
@@ -107,7 +107,7 @@ export function ActivityDetailPage() {
             {!isParticipant ? (
               <button
                 type="button"
-                className="button-primary text-(length:--font-size-xs)"
+                className="btn btn-primary btn-sm"
                 onClick={handleJoin}
               >
                 Rejoindre l&apos;activité
@@ -170,7 +170,7 @@ export function ActivityDetailPage() {
               />
               <button
                 type="submit"
-                className="button-primary px-(--space-3) text-(length:--font-size-xs)"
+                className="btn btn-primary btn-sm"
                 disabled={!isParticipant}
               >
                 Envoyer

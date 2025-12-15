@@ -138,12 +138,14 @@ export function CreateActivityPage() {
           <div className="md:col-span-2 flex justify-end gap-(--space-2)">
             <button
               type="button"
-              className="rounded-2xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-3) py-(--space-1) text-(length:--font-size-xs) text-(--color-text-main)"
+              className="btn btn-secondary btn-sm"
               onClick={() => navigate("/")}
             >
               Annuler
             </button>
+
             <button type="submit" className="button-primary px-(--space-4) text-(length:--font-size-sm)">
+
               {isSubmitting ? "Création..." : "Créer l'activité"}
             </button>
           </div>

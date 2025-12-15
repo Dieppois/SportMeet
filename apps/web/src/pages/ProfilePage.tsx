@@ -23,7 +23,7 @@ export function ProfilePage() {
           </p>
           <button
             type="button"
-            className="button-primary justify-center"
+            className="btn btn-primary"
             onClick={() => navigate("/login")}
           >
             Aller à la connexion
@@ -70,15 +70,12 @@ export function ProfilePage() {
             </p>
           </div>
           <div className="flex gap-(--space-2)">
-            <Link
-              to="/"
-              className="rounded-2xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-3) py-(--space-1) text-(length:--font-size-xs)"
-            >
+            <Link to="/" className="btn btn-secondary btn-sm">
               Retour à l&apos;accueil
             </Link>
             <button
               type="button"
-              className="rounded-2xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-3) py-(--space-1) text-(length:--font-size-xs)"
+              className="btn btn-secondary btn-sm"
               onClick={handleLogout}
             >
               Se déconnecter
@@ -143,7 +140,7 @@ export function ProfilePage() {
               </p>
             ) : null}
 
-            <button type="submit" className="button-primary mt-(--space-1)">
+            <button type="submit" className="btn btn-primary">
               {isSaving ? "Enregistrement..." : "Enregistrer les modifications"}
             </button>
           </form>
