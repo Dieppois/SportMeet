@@ -49,132 +49,36 @@ export function LandingPage() {
       </header>
 
       {/* Hero + preview */}
-      <section className="mx-auto flex max-w-6xl flex-col gap-(--space-6) px-(--space-4) pb-(--space-8) pt-(--space-5) sm:px-(--space-6) lg:flex-row lg:items-center lg:gap-(--space-8) lg:px-(--space-8) lg:pb-(--space-10) lg:pt-(--space-6)">
-        {/* Hero copy */}
-        <div className="flex-1 space-y-8">
-
-          <div className="space-y-4">
-            <h1 className="text-balance font-semibold tracking-tight text-(--color-text-main) sm:text-(--font-size-4xl) lg:text-(--font-size-4xl)">
-              <span>
-                Ne joue plus jamais{" "}
-                <span className="text-(--color-primary-light)">
-                  en solo
+      <section className="mx-auto max-w-6xl px-(--space-4) pb-(--space-8) pt-(--space-5) sm:px-(--space-6) lg:px-(--space-8) lg:pb-(--space-10) lg:pt-(--space-6)">
+        <div className="flex flex-col items-stretch gap-(--space-6) lg:flex-row lg:items-center lg:gap-(--space-8)">
+          {/* Texte à gauche */}
+          <div className="flex-1 space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-balance font-semibold tracking-tight text-(--color-text-main) sm:text-(--font-size-4xl) lg:text-(--font-size-4xl)">
+                <span>
+                  Ne joue plus jamais{" "}
+                  <span className="text-(--color-primary-light)">
+                    en solo
+                  </span>
                 </span>
-              </span>
-            </h1>
-            <p className="max-w-xl text-balance text-(--color-text-soft) sm:text-(--font-size-base)">
-              Sport Matcher te connecte instantanément avec des joueurs
-              compatibles autour de toi selon le sport, le niveau, la
-              disponibilité et même ton style de jeu. Idéal pour imaginer un
-              parcours fluide entre découverte, matching et chat en temps réel.
-            </p>
+              </h1>
+              <p className="max-w-xl text-balance text-(--color-text-soft) sm:text-(--font-size-base)">
+                Sport Matcher te connecte instantanément avec des joueurs
+                compatibles autour de toi selon le sport, le niveau, la
+                disponibilité et même ton style de jeu. Idéal pour imaginer un
+                parcours fluide entre découverte, matching et chat en temps réel.
+              </p>
+              <button className="button-primary">Je cherche un match</button>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-(--space-2) sm:flex-row sm:items-center">
-            <Link
-              to="/signup"
-              className="button-primary inline-flex items-center justify-center gap-(--space-1)"
-            >
-              Je veux jouer
-            </Link>
-          </div>
-
-        </div>
-
-        <div className="flex-1">
-            <div className="relative mx-auto max-w-md">
-            {/* Main card */}
-            <div className="relative rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-4 shadow-(--shadow-primary-soft)">
-              {/* Tab header */}
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-(--color-primary)" />
-                  <p className="text-xs font-medium text-(--color-text-soft)">
-                    Matchs suggérés près de toi
-                  </p>
-                </div>
-                <button className="rounded-full bg-(--color-surface-light) px-3 py-1 text-[11px] font-medium text-(--color-text-main) hover:bg-(--color-surface)">
-                  Voir tout
-                </button>
-              </div>
-
-              {/* Match cards */}
-              <div className="space-y-3">
-                {/* Match 1 */}
-                <div className="flex items-center gap-3 rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-(--color-primary) text-sm font-semibold text-(--color-bg)">
-                    5v5
-                  </div>
-                    <div className="flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-(--color-text-main)">
-                        Foot · Terrain synthé
-                      </p>
-                      <span className="rounded-full bg-(--color-secondary-dark) px-2 py-0.5 text-[11px] font-medium text-(--color-text-main)">
-                        3 places
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-[11px] text-(--color-text-muted)">
-                      Ce soir · 20h00 · 2,1 km · Niveau inter / avancé
-                    </p>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-(--color-text-muted)">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-(--gray-800) text-[10px]">
-                        ⚽
-                      </span>
-                      <span>3 amis en commun · 92% de compatibilité</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Match 2 */}
-                <div className="flex items-center gap-3 rounded-2xl border border-(--color-border-subtle) bg-(--color-surface-light) p-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-(--color-secondary) text-sm font-semibold text-(--color-bg)">
-                    1v1
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-(--color-text-main)">
-                        Tennis · Dur extérieur
-                      </p>
-                      <span className="rounded-full bg-(--color-accent) px-2 py-0.5 text-[11px] font-medium text-(--color-bg)">
-                        Match rapide
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-[11px] text-(--color-text-muted)">
-                      Demain · 18h30 · 900 m · Niveau 15/4 – 15/3
-                    </p>
-                    <div className="mt-2 flex items-center gap-1 text-[11px] text-(--color-text-muted)">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-(--gray-800) text-[10px]">
-                        💬
-                      </span>
-                      <span>Discussion déjà entamée · 4 messages échangés</span>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            {/* Bottom stats pill */}
-            <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) px-4 py-3 text-[11px] text-(--color-text-soft)">
-              <div>
-                <p className="font-semibold text-(--color-text-main)">
-                  +248 matchs
-                </p>
-                <p className="text-(--color-text-muted)">
-                  organisés cette semaine
-                </p>
-              </div>
-              <div className="h-10 w-px bg-(--gray-800)" />
-              <div>
-                <p className="font-semibold text-(--color-primary-light)">
-                  92% de joueurs
-                </p>
-                <p className="text-(--color-text-muted)">
-                  veulent rejouer avec leurs matchs
-                </p>
-              </div>
-            </div>
+          {/* Image à droite */}
+          <div className="flex-1">
+            <img
+              src="/hero_img.jpg"
+              alt="Hero image"
+              className="w-full h-full max-h-[420px] rounded-3xl object-cover shadow-(--shadow-soft)"
+            />
           </div>
         </div>
       </section>
