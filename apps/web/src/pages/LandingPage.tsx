@@ -1,8 +1,25 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { getAllActivities } from "../services/localActivityService";
+
+import { useAuth } from "../context/AuthContext";
+import { getAllGroups } from "../services/localGroupService";
+
+const ALL_GROUPS = getAllGroups();
 
 export function LandingPage() {
-  const activities = getAllActivities();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [sportFilter, setSportFilter] = useState("");
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const filteredGroups = ALL_GROUPS.filter((group) => {
+    if (!sportFilter.trim()) return true;
+    return group.sport.toLowerCase().includes(sportFilter.toLowerCase());
+  });
+
+  const visibleGroups = filteredGroups.slice(0, visibleCount);
+  const canShowMore = visibleCount < filteredGroups.length;
 
   return (
     <main className="min-h-screen bg-(--color-bg) text-(--color-text-main)">
@@ -22,28 +39,45 @@ export function LandingPage() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-8 text-sm text-(--color-text-soft) md:flex">
-            <button type="button" className="hover:text-(--color-text-main)">
+          <nav className="hidden items-center gap-8 md:flex">
+            <button type="button" className="btn btn-ghost">
               Fonctionnalités
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Comment ça marche
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Tarifs
             </button>
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Link
-              to="/login"
-              className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-main) shadow-sm hover:border-(--color-border-strong) hover:bg-(--color-surface-light)"
-            >
-              Connexion
-            </Link>
-            <Link to="/signup" className="button-primary px-6 py-2 text-sm">
-              Créer un compte
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <span className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-soft)">
+                  {user?.pseudo ?? "Mon compte"}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-main) shadow-sm hover:border-(--color-border-strong) hover:bg-(--color-surface-light)"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-main) shadow-sm hover:border-(--color-border-strong) hover:bg-(--color-surface-light)"
+                >
+                  Connexion
+                </Link>
+                <Link to="/signup" className="button-primary px-6 py-2 text-sm">
+                  Créer un compte
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -54,7 +88,7 @@ export function LandingPage() {
           {/* Texte à gauche */}
           <div className="flex-1 space-y-8">
             <div className="space-y-4">
-              <h1 className="text-balance font-semibold tracking-tight text-(--color-text-main) sm:text-(--font-size-4xl) lg:text-(--font-size-4xl)">
+              <h1 className="text-balance font-semibold tracking-tight text-(--color-text-main) text-3xl sm:text-4xl lg:text-5xl">
                 <span>
                   Ne joue plus jamais{" "}
                   <span className="text-(--color-primary-light)">
@@ -68,7 +102,7 @@ export function LandingPage() {
                 disponibilité et même ton style de jeu. Idéal pour imaginer un
                 parcours fluide entre découverte, matching et chat en temps réel.
               </p>
-              <button className="button-primary">Je cherche un match</button>
+              <button className="btn btn-primary">Je cherche un match</button>
             </div>
           </div>
 
@@ -134,52 +168,89 @@ export function LandingPage() {
         <div className="mb-(--space-3) flex items-center justify-between">
           <div>
             <h2 className="text-(--font-size-lg) font-semibold">
-              Activités ouvertes
+              Vos groupes
             </h2>
             <p className="text-(--color-text-muted)">
-              Crée une activité depuis l'accueil et laisse les autres
-              utilisateurs la rejoindre et discuter.
+              Découvre des groupes par sport et par niveau pour trouver rapidement
+              des partenaires de jeu.
             </p>
           </div>
-          <Link to="/activities/new" className="button-primary text-(--font-size-xs)">
-            Créer une activité
-          </Link>
+          <button
+            type="button"
+            onClick={() => setShowFilters((prev) => !prev)}
+            className="rounded-full border border-(--color-border-subtle) px-3 py-1 text-(--font-size-xs) text-(--color-text-soft) hover:border-(--color-border-strong)"
+          >
+            Filtres
+          </button>
         </div>
 
-        {activities.length === 0 ? (
+        {!isAuthenticated ? (
           <p className="text-(--color-text-muted)">
-            Aucune activité pour le moment. Sois le premier à en créer une !
+            Connecte-toi ou crée un compte pour découvrir les groupes proposés.
           </p>
         ) : (
-          <div className="grid gap-(--space-3) md:grid-cols-2">
-            {activities.map((activity) => (
-              <article
-                key={activity.id}
-                className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-1)"
-              >
-                <h3 className="text-(--font-size-sm) font-semibold">
-                  {activity.title}
-                </h3>
-                <p className="text-(--color-text-muted)">
-                  {activity.dateTime ?? "Date à définir"} ·{" "}
-                  {activity.location ?? "Lieu à définir"}
-                </p>
-                <p className="text-(--color-text-soft)">
-                  {activity.maxParticipants
-                    ? `${activity.participantIds.length} / ${activity.maxParticipants} participants`
-                    : `${activity.participantIds.length} participant(s)`}
-                </p>
-                <div className="mt-(--space-2) flex justify-between gap-(--space-2)">
-                  <Link
-                    to={`/activities/${activity.id}`}
-                    className="button-primary text-(--font-size-xs)"
-                  >
-                    Ouvrir l'activité
-                  </Link>
+          <>
+            {showFilters ? (
+              <div className="mb-(--space-3)">
+                <label className="mb-1 block text-(--font-size-xs) text-(--color-text-soft)">
+                  Filtrer par sport
+                </label>
+                <input
+                  value={sportFilter}
+                  onChange={(event) => setSportFilter(event.target.value)}
+                  className="w-full max-w-xs rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(--font-size-sm) outline-none focus:border-(--color-primary)"
+                  placeholder="Ex : Handball, Football, Tennis…"
+                />
+              </div>
+            ) : null}
+
+            {visibleGroups.length === 0 ? (
+              <p className="text-(--color-text-muted)">
+                Aucun groupe ne correspond à ce filtre pour le moment.
+              </p>
+            ) : (
+              <>
+                <div className="grid gap-(--space-3) md:grid-cols-3">
+                  {visibleGroups.map((group) => (
+                    <article
+                      key={group.id}
+                      className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-1)"
+                    >
+                      <h3 className="text-(--font-size-sm) font-semibold">
+                        {group.sport} · {group.level}
+                      </h3>
+                      <p className="text-(--color-text-muted)">
+                        {group.city
+                          ? `${group.city} · ${group.membersCount} membres`
+                          : `${group.membersCount} membres`}
+                      </p>
+                      <p className="text-(--color-text-soft)">{group.description}</p>
+                      <div className="mt-(--space-2) flex justify-between gap-(--space-2)">
+                        <Link
+                          to={`/groups/${group.id}`}
+                          className="button-primary text-(--font-size-xs) px-4"
+                        >
+                          Rejoindre le groupe
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
                 </div>
-              </article>
-            ))}
-          </div>
+
+                {canShowMore ? (
+                  <div className="mt-(--space-3) flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((current) => current + 6)}
+                      className="rounded-full border border-(--color-border-subtle) px-5 py-2 text-(--font-size-sm) text-(--color-text-soft) hover:border-(--color-border-strong)"
+                    >
+                      Afficher plus
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </>
         )}
       </section>
     </main>

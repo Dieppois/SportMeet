@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { UserSearchPage } from "./pages/UserSearchPage";
 import { GroupsPage } from "./pages/GroupsPage";
+import { GroupDetailPage } from "./pages/GroupDetailPage";
 import { CreateActivityPage } from "./pages/CreateActivityPage";
 import { ActivityDetailPage } from "./pages/ActivityDetailPage";
 
@@ -26,6 +27,7 @@ export function App() {
 
       {/* Groupes & activités */}
       <Route path="/groups" element={<GroupsPage />} />
+      <Route path="/groups/:groupId" element={<GroupDetailPage />} />
       <Route path="/activities/new" element={<CreateActivityPage />} />
       <Route
         path="/groups/:groupId/activities/new"

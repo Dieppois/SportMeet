@@ -44,7 +44,7 @@ export function SignupPage() {
             />
           </div>
 
-          <button type="submit" className="button-primary w-full">
+          <button type="submit" className="btn btn-primary btn-full">
             Créer mon compte
           </button>
         </form>
