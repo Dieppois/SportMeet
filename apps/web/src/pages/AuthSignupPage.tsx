@@ -2,7 +2,6 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import type { SportLevel } from "../services/localUserService";
 
 export function AuthSignupPage() {
   const { signup } = useAuth();
@@ -11,8 +10,6 @@ export function AuthSignupPage() {
   const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [sportName, setSportName] = useState("Football");
-  const [sportLevel, setSportLevel] = useState<SportLevel>("Débutant");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -25,8 +22,6 @@ export function AuthSignupPage() {
       pseudo,
       email,
       password,
-      sportName,
-      sportLevel,
     });
 
     setIsSubmitting(false);
@@ -47,8 +42,8 @@ export function AuthSignupPage() {
             Créer un compte
           </h1>
           <p className="mt-(--space-1) text-(length:--font-size-xs) text-(--color-text-muted)">
-            Décris ton profil sportif pour que Sport Matcher puisse te proposer
-            des partenaires adaptés.
+            Crée ton profil en quelques secondes pour accéder aux groupes et
+            activités autour de toi.
           </p>
         </header>
 
@@ -88,41 +83,6 @@ export function AuthSignupPage() {
               className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
               placeholder="••••••••"
             />
-          </div>
-
-          <div className="grid grid-cols-2 gap-(--space-2)">
-            <div className="space-y-(--space-1)">
-              <label className="block text-(length:--font-size-xs) text-(--color-text-soft)">
-                Sport principal
-              </label>
-              <select
-                className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
-                value={sportName}
-                onChange={(event) => setSportName(event.target.value)}
-              >
-                <option value="Football">Football</option>
-                <option value="Tennis">Tennis</option>
-                <option value="Basketball">Basketball</option>
-                <option value="Running">Running</option>
-              </select>
-            </div>
-            <div className="space-y-(--space-1)">
-              <label className="block text-(length:--font-size-xs) text-(--color-text-soft)">
-                Niveau estimé
-              </label>
-              <select
-                className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
-                value={sportLevel}
-                onChange={(event) =>
-                  setSportLevel(event.target.value as SportLevel)
-                }
-              >
-                <option value="Débutant">Débutant</option>
-                <option value="Intermédiaire">Intermédiaire</option>
-                <option value="Avancé">Avancé</option>
-                <option value="Compétition">Compétition</option>
-              </select>
-            </div>
           </div>
 
           {error ? (

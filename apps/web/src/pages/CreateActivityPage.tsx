@@ -144,7 +144,7 @@ export function CreateActivityPage() {
               Annuler
             </button>
             <button type="submit" className="button-primary px-(--space-4) text-(length:--font-size-sm)">
-              {isSubmitting ? "Création..." : "Créer l&apos;activité"}
+              {isSubmitting ? "Création..." : "Créer l'activité"}
             </button>
           </div>
         </form>
