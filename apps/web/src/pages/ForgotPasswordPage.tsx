@@ -45,7 +45,7 @@ export function ForgotPasswordPage() {
             </p>
           ) : null}
 
-          <button type="submit" className="button-primary w-full justify-center">
+          <button type="submit" className="btn btn-primary btn-full">
             Envoyer le lien de réinitialisation
           </button>
 

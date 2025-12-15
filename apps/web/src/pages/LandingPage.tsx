@@ -22,26 +22,23 @@ export function LandingPage() {
             </div>
           </div>
 
-          <nav className="hidden items-center gap-8 text-sm text-(--color-text-soft) md:flex">
-            <button type="button" className="hover:text-(--color-text-main)">
+          <nav className="hidden items-center gap-8 md:flex">
+            <button type="button" className="btn btn-ghost">
               Fonctionnalités
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Comment ça marche
             </button>
-            <button type="button" className="hover:text-(--color-text-main)">
+            <button type="button" className="btn btn-ghost">
               Tarifs
             </button>
           </nav>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Link
-              to="/login"
-              className="rounded-full border border-(--color-border-subtle) px-4 py-1.5 text-sm font-medium text-(--color-text-main) shadow-sm hover:border-(--color-border-strong) hover:bg-(--color-surface-light)"
-            >
+            <Link to="/login" className="btn btn-secondary btn-sm btn-pill">
               Connexion
             </Link>
-            <Link to="/signup" className="button-primary px-6 py-2 text-sm">
+            <Link to="/signup" className="btn btn-primary btn-sm">
               Créer un compte
             </Link>
           </div>
@@ -68,7 +65,7 @@ export function LandingPage() {
                 disponibilité et même ton style de jeu. Idéal pour imaginer un
                 parcours fluide entre découverte, matching et chat en temps réel.
               </p>
-              <button className="button-primary">Je cherche un match</button>
+              <button className="btn btn-primary">Je cherche un match</button>
             </div>
           </div>
 
@@ -141,7 +138,7 @@ export function LandingPage() {
               utilisateurs la rejoindre et discuter.
             </p>
           </div>
-          <Link to="/activities/new" className="button-primary text-(--font-size-xs)">
+          <Link to="/activities/new" className="btn btn-primary btn-sm">
             Créer une activité
           </Link>
         </div>
@@ -172,7 +169,7 @@ export function LandingPage() {
                 <div className="mt-(--space-2) flex justify-between gap-(--space-2)">
                   <Link
                     to={`/activities/${activity.id}`}
-                    className="button-primary text-(--font-size-xs)"
+                    className="btn btn-primary btn-sm"
                   >
                     Ouvrir l'activité
                   </Link>

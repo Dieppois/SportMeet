@@ -44,7 +44,7 @@ export function GroupsPage() {
           </div>
 
           <div className="flex justify-end">
-            <button className="button-primary">Rechercher un groupe</button>
+            <button className="btn btn-primary">Rechercher un groupe</button>
           </div>
 
           <div className="grid gap-(--space-3) md:grid-cols-2">
@@ -62,12 +62,12 @@ export function GroupsPage() {
                 soir. Niveau intermédiaire.
               </p>
               <div className="flex justify-between items-center">
-                <button className="button-primary text-(length:--font-size-xs)">
+                <button className="btn btn-primary btn-sm">
                   Rejoindre le groupe
                 </button>
                 <a
                   href="/groups/1"
-                  className="text-(length:--font-size-xs) text-(--color-text-muted)"
+                  className="btn btn-ghost btn-sm"
                 >
                   Voir le détail
                 </a>
@@ -88,12 +88,12 @@ export function GroupsPage() {
                 matchs 1v1 ou 2v2 après le travail.
               </p>
               <div className="flex justify-between items-center">
-                <button className="button-primary text-(length:--font-size-xs)">
+                <button className="btn btn-primary btn-sm">
                   Rejoindre le groupe
                 </button>
                 <a
                   href="/groups/2"
-                  className="text-(length:--font-size-xs) text-(--color-text-muted)"
+                  className="btn btn-ghost btn-sm"
                 >
                   Voir le détail
                 </a>

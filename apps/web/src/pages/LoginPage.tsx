@@ -41,7 +41,7 @@ export function LoginPage() {
             </a>
           </div>
 
-          <button type="submit" className="button-primary w-full">
+          <button type="submit" className="btn btn-primary btn-full">
             Se connecter
           </button>
         </form>

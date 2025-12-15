@@ -80,7 +80,7 @@ export function AuthLoginPage() {
             <p className="text-(length:--font-size-xs) text-red-400">{error}</p>
           ) : null}
 
-          <button type="submit" className="button-primary w-full justify-center">
+          <button type="submit" className="btn btn-primary btn-full">
             {isSubmitting ? "Connexion en cours..." : "Se connecter"}
           </button>
 
