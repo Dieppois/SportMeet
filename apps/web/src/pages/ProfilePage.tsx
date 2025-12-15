@@ -4,29 +4,41 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useUpdateProfile } from "../context/AuthContext";
 
 export function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const updateProfile = useUpdateProfile();
   const navigate = useNavigate();
 
-  const [pseudo, setPseudo] = useState(user?.pseudo ?? "");
+  const [firstName, setFirstName] = useState(user?.first_name ?? "");
+  const [lastName, setLastName] = useState(user?.last_name ?? "");
   const [city, setCity] = useState(user?.city ?? "");
-  const [availability, setAvailability] = useState(user?.availability ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-(--color-bg) text-(--color-text-main) flex items-center justify-center px-(--space-4)">
+        <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-4) text-center">
+          <p className="text-(length:--font-size-sm)">Chargement...</p>
+        </div>
+      </main>
+    );
+  }
 
   if (!user) {
     return (
       <main className="min-h-screen bg-(--color-bg) text-(--color-text-main) flex items-center justify-center px-(--space-4)">
         <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-4) text-center space-y-(--space-2)">
           <p className="text-(length:--font-size-sm)">
-            Tu dois être connecté pour accéder à ton profil.
+            Tu dois etre connecte pour acceder a ton profil.
           </p>
           <button
             type="button"
             className="btn btn-primary"
             onClick={() => navigate("/login")}
           >
-            Aller à la connexion
+            Aller a la connexion
           </button>
         </div>
       </main>
@@ -36,18 +48,22 @@ export function ProfilePage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    setSuccess(null);
     setIsSaving(true);
 
     const result = await updateProfile({
-      pseudo,
-      city,
-      availability,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      city: city || null,
+      bio: bio || null,
     });
 
     setIsSaving(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Erreur lors de la mise à jour du profil.");
+      setError(result.error ?? "Erreur lors de la mise a jour du profil.");
+    } else {
+      setSuccess("Profil mis a jour avec succes !");
     }
   };
 
@@ -65,20 +81,19 @@ export function ProfilePage() {
               Mon profil
             </h1>
             <p className="text-(length:--font-size-xs) text-(--color-text-muted)">
-              Informations stockées en local pour simuler la future API (US-001
-              à 006).
+              Gere tes informations personnelles (US-001 a US-006).
             </p>
           </div>
           <div className="flex gap-(--space-2)">
             <Link to="/" className="btn btn-secondary btn-sm">
-              Retour à l&apos;accueil
+              Retour a l&apos;accueil
             </Link>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={handleLogout}
             >
-              Se déconnecter
+              Se deconnecter
             </button>
           </div>
         </header>
@@ -103,15 +118,27 @@ export function ProfilePage() {
             </div>
 
             <div className="space-y-(--space-2) text-(length:--font-size-xs)">
-              <div>
-                <label className="block text-(--color-text-soft)">
-                  Pseudo
-                </label>
-                <input
-                  className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
-                  value={pseudo}
-                  onChange={(event) => setPseudo(event.target.value)}
-                />
+              <div className="grid gap-(--space-2) md:grid-cols-2">
+                <div>
+                  <label className="block text-(--color-text-soft)">
+                    Prenom
+                  </label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    placeholder="Ton prenom"
+                  />
+                </div>
+                <div>
+                  <label className="block text-(--color-text-soft)">Nom</label>
+                  <input
+                    className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+                    placeholder="Ton nom"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-(--color-text-soft)">Ville</label>
@@ -119,17 +146,16 @@ export function ProfilePage() {
                   className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
+                  placeholder="Ta ville"
                 />
               </div>
               <div>
-                <label className="block text-(--color-text-soft)">
-                  Disponibilités
-                </label>
-                <input
-                  className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
-                  placeholder="Ex : Soirs de semaine, week-end matin…"
-                  value={availability}
-                  onChange={(event) => setAvailability(event.target.value)}
+                <label className="block text-(--color-text-soft)">Bio</label>
+                <textarea
+                  className="mt-1 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary) min-h-[80px]"
+                  value={bio}
+                  onChange={(event) => setBio(event.target.value)}
+                  placeholder="Parle-nous de toi..."
                 />
               </div>
             </div>
@@ -137,6 +163,12 @@ export function ProfilePage() {
             {error ? (
               <p className="text-(length:--font-size-xs) text-red-400">
                 {error}
+              </p>
+            ) : null}
+
+            {success ? (
+              <p className="text-(length:--font-size-xs) text-green-400">
+                {success}
               </p>
             ) : null}
 
@@ -148,22 +180,45 @@ export function ProfilePage() {
           <aside className="space-y-(--space-3)">
             <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-2)">
               <h2 className="text-(length:--font-size-sm) font-semibold">
-                Sports enregistrés
+                Informations du compte
               </h2>
-              {user.sports.length === 0 ? (
-                <p className="text-(length:--font-size-xs) text-(--color-text-muted)">
-                  Aucun sport renseigné pour le moment. Tu pourras les gérer
-                  plus tard dans les préférences.
-                </p>
-              ) : (
-                <ul className="space-y-1 text-(length:--font-size-xs)">
-                  {user.sports.map((sport) => (
-                    <li key={sport.id}>
-                      {sport.name} · {sport.level}
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <ul className="space-y-1 text-(length:--font-size-xs) text-(--color-text-muted)">
+                <li>
+                  <strong>ID:</strong> {user.id}
+                </li>
+                <li>
+                  <strong>Pseudo:</strong> {user.pseudo}
+                </li>
+                <li>
+                  <strong>Visibilite:</strong> {user.profile_visibility || "public"}
+                </li>
+                {user.created_at && (
+                  <li>
+                    <strong>Membre depuis:</strong>{" "}
+                    {new Date(user.created_at).toLocaleDateString("fr-FR")}
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-2)">
+              <h2 className="text-(length:--font-size-sm) font-semibold">
+                Actions rapides
+              </h2>
+              <div className="space-y-2">
+                <Link
+                  to="/groups"
+                  className="btn btn-secondary btn-sm w-full text-center"
+                >
+                  Voir mes groupes
+                </Link>
+                <Link
+                  to="/users"
+                  className="btn btn-secondary btn-sm w-full text-center"
+                >
+                  Rechercher des joueurs
+                </Link>
+              </div>
             </div>
           </aside>
         </section>
@@ -171,5 +226,3 @@ export function ProfilePage() {
     </main>
   );
 }
-
-
