@@ -44,7 +44,7 @@ export function UserSearchPage() {
           </div>
 
           <div className="flex justify-end">
-            <button className="button-primary">Rechercher</button>
+            <button className="btn btn-primary">Rechercher</button>
           </div>
 
           <div className="space-y-(--space-2)">
