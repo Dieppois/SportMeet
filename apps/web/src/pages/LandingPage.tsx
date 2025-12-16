@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -16,9 +16,11 @@ export function LandingPage() {
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [sportFilter, setSportFilter] = useState("");
+  const [levelFilters, setLevelFilters] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(6);
+  const [isLevelDropdownOpen, setIsLevelDropdownOpen] = useState(false);
+  const levelDropdownRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -32,10 +34,36 @@ export function LandingPage() {
   }, [isAuthenticated]);
 
   const filteredGroups = groups.filter((group) => {
-    if (!sportFilter.trim()) return true;
-    const sportName = group.sport_name || "";
-    return sportName.toLowerCase().includes(sportFilter.toLowerCase());
+    const matchesSport = (() => {
+      if (!sportFilter.trim()) return true;
+      const sportName = group.sport_name || "";
+      return sportName.toLowerCase().includes(sportFilter.toLowerCase());
+    })();
+
+    const matchesLevel =
+      levelFilters.length === 0 || levelFilters.includes(group.level);
+
+    return matchesSport && matchesLevel;
   });
+
+  const LEVEL_OPTIONS: { value: string; label: string }[] = [
+    { value: "debutant", label: "Debutant" },
+    { value: "intermediaire", label: "Intermediaire" },
+    { value: "expert", label: "Expert" },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        levelDropdownRef.current &&
+        !levelDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLevelDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const visibleGroups = filteredGroups.slice(0, visibleCount);
   const canShowMore = visibleCount < filteredGroups.length;
@@ -64,7 +92,7 @@ export function LandingPage() {
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold tracking-tight">Sport Matcher</p>
+              <p className="text-sm font-semibold tracking-tight">SportMeet</p>
               <p className="text-xs text-(--color-text-muted)">
                 Trouve des partenaires de jeu en quelques clics
               </p>
@@ -129,7 +157,7 @@ export function LandingPage() {
                 </span>
               </h1>
               <p className="max-w-xl text-balance text-(--color-text-soft) sm:text-(--font-size-base)">
-                Sport Matcher te connecte instantanement avec des joueurs
+                SportMeet te connecte instantanement avec des joueurs
                 compatibles autour de toi selon le sport, le niveau, la
                 disponibilite et meme ton style de jeu.
               </p>
@@ -209,13 +237,6 @@ export function LandingPage() {
               des partenaires de jeu.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowFilters((prev) => !prev)}
-            className="rounded-full border border-(--color-border-subtle) px-3 py-1 text-(--font-size-xs) text-(--color-text-soft) hover:border-(--color-border-strong)"
-          >
-            Filtres
-          </button>
         </div>
 
         {!isAuthenticated ? (
@@ -236,8 +257,8 @@ export function LandingPage() {
           <p className="text-(--color-text-muted)">Chargement des groupes...</p>
         ) : (
           <>
-            {showFilters ? (
-              <div className="mb-(--space-3)">
+            <div className="mb-(--space-3) flex flex-wrap items-center gap-(--space-2)">
+              <div>
                 <label className="mb-1 block text-(--font-size-xs) text-(--color-text-soft)">
                   Filtrer par sport
                 </label>
@@ -248,7 +269,76 @@ export function LandingPage() {
                   placeholder="Ex : Handball, Football, Tennis..."
                 />
               </div>
-            ) : null}
+              <div className="relative flex flex-col" ref={levelDropdownRef}>
+                <label className="mb-1 block text-(--font-size-xs) text-(--color-text-soft)">
+                  Filtrer par niveaux
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsLevelDropdownOpen((prev) => !prev)}
+                  className="flex min-w-[220px] items-center justify-between rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-left text-(--font-size-sm) hover:border-(--color-primary) focus:border-(--color-primary)"
+                >
+                  <span className="flex flex-wrap gap-1">
+                    {levelFilters.length === 0
+                      ? "Tous les niveaux"
+                      : LEVEL_OPTIONS.filter((opt) =>
+                          levelFilters.includes(opt.value)
+                        ).map((opt) => (
+                          <span
+                            key={opt.value}
+                            className="rounded-full bg-(--color-surface-light) px-2 py-[2px] text-(--font-size-2xs) text-(--color-text-main)"
+                          >
+                            {opt.label}
+                          </span>
+                        ))}
+                  </span>
+                  <span className="text-(--color-text-muted)">▾</span>
+                </button>
+                {isLevelDropdownOpen ? (
+                  <div className="absolute z-10 mt-2 w-full rounded-xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-2) shadow-(--shadow-soft)">
+                    {LEVEL_OPTIONS.map((opt) => {
+                      const checked = levelFilters.includes(opt.value);
+                      return (
+                        <label
+                          key={opt.value}
+                          className="flex cursor-pointer items-center gap-2 rounded-lg px-(--space-2) py-[6px] text-(--font-size-sm) hover:bg-(--color-surface-dark)"
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 accent-(--color-primary)"
+                            checked={checked}
+                            onChange={() =>
+                              setLevelFilters((prev) =>
+                                checked
+                                  ? prev.filter((l) => l !== opt.value)
+                                  : [...prev, opt.value]
+                              )
+                            }
+                          />
+                          {opt.label}
+                        </label>
+                      );
+                    })}
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        className="text-(--font-size-xs) text-(--color-text-muted) hover:text-(--color-text-main)"
+                        onClick={() => setLevelFilters([])}
+                      >
+                        Réinitialiser
+                      </button>
+                      <button
+                        type="button"
+                        className="text-(--font-size-xs) text-(--color-primary)"
+                        onClick={() => setIsLevelDropdownOpen(false)}
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
 
             {visibleGroups.length === 0 ? (
               <p className="text-(--color-text-muted)">

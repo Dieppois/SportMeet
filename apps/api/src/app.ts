@@ -16,7 +16,7 @@ export function createApp() {
   app.use(helmet());
   app.use(
     cors({
-      origin: "http://localhost:5173",
+      origin: process.env.FRONT_ORIGINS?.split(",") || ["http://localhost:5174"],
       credentials: true,
     })
   );

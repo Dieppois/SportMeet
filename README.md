@@ -1,4 +1,4 @@
-# Sport Matcher Monorepo
+# SportMeet Monorepo
 
 Monorepo pour l'application de mise en relation sportive (front React + back Node/Express + MySQL + Socket.io).
 
@@ -22,5 +22,4 @@ Monorepo pour l'application de mise en relation sportive (front React + back Nod
 - Node.js >= 18
 - npm >= 8
 - Docker (recommandé) pour MySQL
-
 

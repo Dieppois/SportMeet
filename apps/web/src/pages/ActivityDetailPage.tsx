@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -6,6 +6,7 @@ import {
   activitiesApi,
   type Activity,
   type ActivityParticipant,
+  type SportLevel,
 } from "../services/api";
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -24,12 +25,41 @@ export function ActivityDetailPage() {
   const [remainingSpots, setRemainingSpots] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editStartAt, setEditStartAt] = useState("");
+  const [editEndAt, setEditEndAt] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editLevel, setEditLevel] = useState<SportLevel>("intermediaire");
+  const [editMaxParticipants, setEditMaxParticipants] = useState("");
+
+  const toDateTimeLocal = (value?: string | null) => {
+    if (!value) return "";
+    const date = new Date(value);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const syncFormWithActivity = (act: Activity) => {
+    setEditTitle(act.title);
+    setEditDescription(act.description || "");
+    setEditStartAt(toDateTimeLocal(act.start_at));
+    setEditEndAt(toDateTimeLocal(act.end_at || undefined));
+    setEditLocation(act.location);
+    setEditLevel(act.level);
+    setEditMaxParticipants(act.max_participants ? String(act.max_participants) : "");
+  };
 
   const fetchActivityData = async () => {
     if (!activityId) return;
     try {
       const activityData = await activitiesApi.getById(Number(activityId));
       setActivity(activityData);
+      syncFormWithActivity(activityData);
 
       const spotsData = await activitiesApi.getRemainingSpots(Number(activityId));
       setRemainingSpots(spotsData.remaining);
@@ -100,6 +130,53 @@ export function ActivityDetailPage() {
       navigate("/groups");
     } catch (e: any) {
       alert(e.message || "Impossible de supprimer l'activite.");
+    }
+  };
+
+  const handleSaveEdits = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!activity) return;
+    setEditError(null);
+
+    if (!isAuthenticated || activity.created_by !== user?.id) {
+      setEditError("Seul l'organisateur peut modifier l'activite.");
+      return;
+    }
+
+    if (!editTitle.trim()) {
+      setEditError("Le titre est obligatoire.");
+      return;
+    }
+    if (!editStartAt) {
+      setEditError("La date de debut est obligatoire.");
+      return;
+    }
+    if (!editLocation.trim()) {
+      setEditError("Le lieu est obligatoire.");
+      return;
+    }
+
+    const payload = {
+      title: editTitle.trim(),
+      description: editDescription.trim() ? editDescription.trim() : null,
+      start_at: new Date(editStartAt).toISOString(),
+      end_at: editEndAt ? new Date(editEndAt).toISOString() : null,
+      location: editLocation.trim(),
+      level: editLevel,
+      max_participants: editMaxParticipants ? Number.parseInt(editMaxParticipants, 10) : null,
+    };
+
+    setIsSaving(true);
+    try {
+      const updated = await activitiesApi.update(activity.id, payload);
+      setActivity(updated);
+      syncFormWithActivity(updated);
+      setIsEditing(false);
+      await fetchActivityData();
+    } catch (e: any) {
+      setEditError(e.message || "Impossible de mettre a jour l'activite.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -198,47 +275,185 @@ export function ActivityDetailPage() {
         <section className="grid gap-(--space-3) md:grid-cols-[2fr,1fr]">
           <div className="space-y-(--space-3)">
             <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-2)">
-              <h2 className="text-(length:--font-size-sm) font-semibold">
-                Details
-              </h2>
-              <p className="text-(length:--font-size-xs) text-(--color-text-soft)">
-                {activity.description || "Aucune description detaillee pour le moment."}
-              </p>
-              <div className="grid grid-cols-2 gap-(--space-2) text-(length:--font-size-xs)">
-                <div>
-                  <span className="text-(--color-text-muted)">Lieu:</span>
-                  <p>{activity.location}</p>
-                </div>
-                <div>
-                  <span className="text-(--color-text-muted)">Niveau:</span>
-                  <p>{LEVEL_LABELS[activity.level] || activity.level}</p>
-                </div>
-                <div>
-                  <span className="text-(--color-text-muted)">Participants:</span>
-                  <p>
-                    {activity.registered_count || 0}
-                    {activity.max_participants && ` / ${activity.max_participants}`}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-(--color-text-muted)">Places restantes:</span>
-                  <p>{remainingSpots !== null ? remainingSpots : "Illimite"}</p>
-                </div>
+              <div className="flex items-start justify-between gap-(--space-2)">
+                <h2 className="text-(length:--font-size-sm) font-semibold">
+                  Details
+                </h2>
+                {isOrganizer && (
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      if (isEditing) {
+                        syncFormWithActivity(activity);
+                        setIsEditing(false);
+                        setEditError(null);
+                      } else {
+                        setIsEditing(true);
+                      }
+                    }}
+                  >
+                    {isEditing ? "Fermer l'edition" : "Modifier"}
+                  </button>
+                )}
               </div>
+
+              {isEditing ? (
+                <form className="grid gap-(--space-2)" onSubmit={handleSaveEdits}>
+                  <div className="space-y-(--space-1)">
+                    <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                      Titre *
+                    </label>
+                    <input
+                      className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-(--space-2) md:grid-cols-2">
+                    <div className="space-y-(--space-1)">
+                      <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                        Debut *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                        value={editStartAt}
+                        onChange={(event) => setEditStartAt(event.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-(--space-1)">
+                      <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                        Fin
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                        value={editEndAt}
+                        onChange={(event) => setEditEndAt(event.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-(--space-1)">
+                    <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                      Lieu *
+                    </label>
+                    <input
+                      className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                      value={editLocation}
+                      onChange={(event) => setEditLocation(event.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-(--space-2) md:grid-cols-3">
+                    <div className="space-y-(--space-1)">
+                      <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                        Niveau
+                      </label>
+                      <select
+                        className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                        value={editLevel}
+                        onChange={(event) => setEditLevel(event.target.value as SportLevel)}
+                      >
+                        <option value="debutant">Debutant</option>
+                        <option value="intermediaire">Intermediaire</option>
+                        <option value="expert">Expert</option>
+                      </select>
+                    </div>
+                    <div className="space-y-(--space-1)">
+                      <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                        Places max
+                      </label>
+                      <input
+                        type="number"
+                        min="2"
+                        className="w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                        value={editMaxParticipants}
+                        onChange={(event) => setEditMaxParticipants(event.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-(--space-1)">
+                    <label className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                      Description
+                    </label>
+                    <textarea
+                      className="min-h-[80px] w-full rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
+                      value={editDescription}
+                      onChange={(event) => setEditDescription(event.target.value)}
+                    />
+                  </div>
+
+                  {editError ? (
+                    <p className="text-(length:--font-size-xs) text-red-400">{editError}</p>
+                  ) : null}
+
+                  <div className="flex flex-wrap gap-(--space-2) justify-end">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        syncFormWithActivity(activity);
+                        setIsEditing(false);
+                        setEditError(null);
+                      }}
+                    >
+                      Annuler
+                    </button>
+                    <button type="submit" className="btn btn-primary btn-sm" disabled={isSaving}>
+                      {isSaving ? "Sauvegarde..." : "Enregistrer"}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <p className="text-(length:--font-size-xs) text-(--color-text-soft)">
+                    {activity.description || "Aucune description detaillee pour le moment."}
+                  </p>
+                  <div className="grid grid-cols-2 gap-(--space-2) text-(length:--font-size-xs)">
+                    <div>
+                      <span className="text-(--color-text-muted)">Lieu:</span>
+                      <p>{activity.location}</p>
+                    </div>
+                    <div>
+                      <span className="text-(--color-text-muted)">Niveau:</span>
+                      <p>{LEVEL_LABELS[activity.level] || activity.level}</p>
+                    </div>
+                    <div>
+                      <span className="text-(--color-text-muted)">Participants:</span>
+                      <p>
+                        {activity.registered_count || 0}
+                        {activity.max_participants && ` / ${activity.max_participants}`}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-(--color-text-muted)">Places restantes:</span>
+                      <p>{remainingSpots !== null ? remainingSpots : "Illimite"}</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            {isOrganizer && activity.status === "published" && (
+            {isOrganizer && (
               <div className="rounded-3xl border border-(--color-border-subtle) bg-(--color-surface) p-(--space-3) space-y-(--space-2)">
                 <h2 className="text-(length:--font-size-sm) font-semibold">
                   Actions organisateur
                 </h2>
                 <div className="flex flex-wrap gap-(--space-2)">
-                  <button
-                    onClick={handleCancel}
-                    className="btn btn-secondary btn-sm"
-                  >
-                    Annuler l'activite
-                  </button>
+                  {activity.status === "published" && (
+                    <button
+                      onClick={handleCancel}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Annuler l'activite
+                    </button>
+                  )}
                   <button
                     onClick={handleDelete}
                     className="btn btn-secondary btn-sm text-red-400"

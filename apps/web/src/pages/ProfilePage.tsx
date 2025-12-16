@@ -207,7 +207,7 @@ export function ProfilePage() {
               </h2>
               <div className="space-y-2">
                 <Link
-                  to="/groups"
+                  to="/my-groups"
                   className="btn btn-secondary btn-sm w-full text-center"
                 >
                   Voir mes groupes

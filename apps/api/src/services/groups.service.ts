@@ -59,8 +59,23 @@ export async function searchGroups(params: { sport_id?: number; level?: string; 
   }
   const sql = `SELECT g.*, s.name as sport_name, (SELECT COUNT(*) FROM group_members gm WHERE gm.group_id = g.id AND gm.status='active') as members_count FROM \`groups\` g JOIN sports s ON g.sport_id = s.id ${
     where.length ? "WHERE " + where.join(" AND ") : ""
-  } ORDER BY g.created_at DESC LIMIT 50`;
+  } ORDER BY g.created_at DESC LIMIT 200`;
   const [rows] = await pool.query(sql, values);
+  return rows as any[];
+}
+
+export async function listUserGroups(userId: number) {
+  const [rows] = await pool.query(
+    `SELECT g.*, s.name as sport_name, gm.role,
+      (SELECT COUNT(*) FROM group_members gm2 WHERE gm2.group_id = g.id AND gm2.status='active') as members_count
+     FROM group_members gm
+     JOIN \`groups\` g ON g.id = gm.group_id
+     JOIN sports s ON s.id = g.sport_id
+     WHERE gm.user_id = ? AND gm.status='active'
+     ORDER BY g.created_at DESC
+     LIMIT 200`,
+    [userId]
+  );
   return rows as any[];
 }
 

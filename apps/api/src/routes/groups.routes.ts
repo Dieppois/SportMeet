@@ -6,6 +6,7 @@ import {
   joinGroupController,
   leaveGroupController,
   listMembersController,
+  listUserGroupsController,
   searchGroupsController,
 } from "../controllers/groups.controller";
 import { requireAuth } from "../middlewares/auth";
@@ -27,6 +28,9 @@ router.post("/", requireAuth, validateBody(createSchema), createGroupController)
 
 // GET /api/groups/search?sport_id=&level=&city=
 router.get("/search", searchGroupsController);
+
+// GET /api/groups/mine
+router.get("/mine", requireAuth, listUserGroupsController);
 
 // GET /api/groups/:id
 router.get("/:id", getGroupController);

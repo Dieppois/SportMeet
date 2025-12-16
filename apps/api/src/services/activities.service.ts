@@ -5,14 +5,31 @@ export type CreateActivityInput = {
   sport_id: number;
   title: string;
   description?: string | null;
-  start_at: string; // ISO datetime
-  end_at?: string | null;
+  start_at: string | Date; // ISO datetime
+  end_at?: string | Date | null;
   location: string;
   level: "debutant" | "intermediaire" | "expert";
   max_participants?: number | null;
 };
 
+function parseDateInput(value: unknown, field: string, allowNull = false): Date | null {
+  if (value === null || value === undefined || value === "") {
+    if (allowNull) return null;
+    const err: any = new Error(`Invalid datetime for ${field}`);
+    err.status = 400; err.code = "INVALID_DATETIME"; throw err;
+  }
+  const date = value instanceof Date ? value : new Date(String(value));
+  if (Number.isNaN(date.getTime())) {
+    const err: any = new Error(`Invalid datetime for ${field}`);
+    err.status = 400; err.code = "INVALID_DATETIME"; throw err;
+  }
+  return date;
+}
+
 export async function createActivity(userId: number, data: CreateActivityInput) {
+  const startAt = parseDateInput(data.start_at, "start_at");
+  const endAt = parseDateInput(data.end_at, "end_at", true);
+
   const [res] = await pool.query(
     "INSERT INTO activities (group_id, sport_id, title, description, start_at, end_at, location, level, max_participants, status, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?, 'published', ?, NOW(), NOW())",
     [
@@ -20,8 +37,8 @@ export async function createActivity(userId: number, data: CreateActivityInput) 
       data.sport_id,
       data.title,
       data.description || null,
-      data.start_at,
-      data.end_at || null,
+      startAt,
+      endAt,
       data.location,
       data.level,
       data.max_participants || null,
@@ -62,7 +79,16 @@ export async function updateActivity(userId: number, id: number, data: Partial<C
 
   const fields: string[] = [];
   const values: any[] = [];
-  for (const [k, v] of Object.entries(data)) { fields.push(`${k} = ?`); values.push(v); }
+  for (const [k, v] of Object.entries(data)) {
+    if (k === "start_at" || k === "end_at") {
+      const parsed = parseDateInput(v, k, true);
+      fields.push(`${k} = ?`);
+      values.push(parsed);
+      continue;
+    }
+    fields.push(`${k} = ?`);
+    values.push(v);
+  }
   if (fields.length === 0) return getActivityById(id);
   values.push(id);
   await pool.query(`UPDATE activities SET ${fields.join(", ")}, updated_at = NOW() WHERE id = ?`, values);

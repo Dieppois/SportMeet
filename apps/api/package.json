@@ -8,7 +8,7 @@
     "start": "node dist/index.js",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "jest",
-    "migrate": "node ./scripts/run-sql.js apps/api/prisma/mysql_schema.sql"
+    "migrate": "node ./scripts/run-sql.js prisma/mysql_schema.sql"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
@@ -42,5 +42,4 @@
     "typescript": "^5.6.3"
   }
 }
-
 

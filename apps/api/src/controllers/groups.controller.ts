@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { createGroup, getGroupById, joinGroup, leaveGroup, listMembers, searchGroups } from "../services/groups.service";
+import { createGroup, getGroupById, joinGroup, leaveGroup, listMembers, listUserGroups, searchGroups } from "../services/groups.service";
 
 export async function createGroupController(req: Request, res: Response, next: NextFunction) {
   try {
@@ -19,6 +19,16 @@ export async function searchGroupsController(req: Request, res: Response, next: 
       level: level ? String(level) : undefined,
       city: city ? String(city) : undefined,
     });
+    res.json({ groups });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function listUserGroupsController(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user!.id;
+    const groups = await listUserGroups(userId);
     res.json({ groups });
   } catch (e) {
     next(e);

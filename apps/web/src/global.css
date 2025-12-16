@@ -258,5 +258,25 @@ body {
   box-shadow: var(--shadow-primary);
 }
 
+/* Raccourci fixe pour revenir a l'accueil depuis n'importe quelle page */
+.home-shortcut {
+  position: fixed;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 50;
+  box-shadow: var(--shadow-primary-soft);
+}
+
+.home-shortcut:hover {
+  box-shadow: var(--shadow-primary);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .home-shortcut {
+    right: var(--space-2);
+    bottom: var(--space-2);
+  }
+}
 
 

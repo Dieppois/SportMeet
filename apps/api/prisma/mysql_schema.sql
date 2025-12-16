@@ -323,6 +323,27 @@ VALUES
 ('Foot Bordeaux Debutant', 'Matchs amicaux le soir', 'Bordeaux', 1, 'debutant', 'public', 50, 1),
 ('Tennis Bordeaux Inter', 'Partenaires tennis niveau inter', 'Bordeaux', 13, 'intermediaire', 'private', 30, 3);
 
+-- Groupes generes automatiquement : 1 par sport x 3 niveaux si manquants
+INSERT INTO `groups` (name, description, city, sport_id, level, visibility, max_members, created_by)
+SELECT
+  CONCAT(s.name, ' - ', l.label) AS name,
+  CONCAT('Sessions ', LOWER(s.name), ' niveau ', LOWER(l.label), ' a Bordeaux') AS description,
+  'Bordeaux' AS city,
+  s.id,
+  l.level,
+  'public' AS visibility,
+  40 AS max_members,
+  1 AS created_by
+FROM sports s
+CROSS JOIN (
+  SELECT 'debutant' AS level, 'Debutant' AS label
+  UNION ALL SELECT 'intermediaire', 'Intermediaire'
+  UNION ALL SELECT 'expert', 'Expert'
+) l
+WHERE NOT EXISTS (
+  SELECT 1 FROM `groups` g WHERE g.sport_id = s.id AND g.level = l.level
+);
+
 -- Membres des groupes
 INSERT INTO group_members (group_id, user_id, role, status) VALUES
 (1, 1, 'owner', 'active'),
@@ -330,6 +351,15 @@ INSERT INTO group_members (group_id, user_id, role, status) VALUES
 (1, 3, 'moderator', 'active'),
 (2, 3, 'owner', 'active'),
 (2, 1, 'member', 'active');
+
+-- Ajoute automatiquement le createur comme owner si absent
+INSERT INTO group_members (group_id, user_id, role, status, joined_at)
+SELECT g.id, g.created_by, 'owner', 'active', NOW()
+FROM `groups` g
+WHERE NOT EXISTS (
+  SELECT 1 FROM group_members gm
+  WHERE gm.group_id = g.id AND gm.user_id = g.created_by AND gm.role = 'owner' AND gm.status = 'active'
+);
 
 -- Activites
 INSERT INTO activities (group_id, sport_id, title, description, start_at, end_at, location, level, max_participants, status, created_by)
@@ -386,4 +416,3 @@ VALUES
 -- Bannissement (exemple leve)
 INSERT INTO user_bans (user_id, banned_by, reason, status, starts_at, ends_at, lifted_at)
 VALUES (3, 1, 'Spam', 'lifted', '2024-12-01 00:00:00', '2024-12-15 00:00:00', '2024-12-10 00:00:00');
-

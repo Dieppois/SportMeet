@@ -13,6 +13,11 @@ import {
   unenrollController,
   updateActivityController,
 } from "../controllers/activities.controller";
+import {
+  listActivityMessagesController,
+  reportActivityMessageController,
+  sendActivityMessageController,
+} from "../controllers/chat.controller";
 import { requireAuth } from "../middlewares/auth";
 import { validateBody } from "../utils/validation";
 
@@ -66,3 +71,14 @@ router.post(
 
 // GET /api/groups/:groupId/activities
 router.get("/group/:groupId", listGroupActivitiesController);
+
+// Activity chat
+const chatMessageSchema = z.object({ content: z.string().min(1).max(2000) });
+router.get("/:id/chat/messages", requireAuth, listActivityMessagesController);
+router.post("/:id/chat/messages", requireAuth, validateBody(chatMessageSchema), sendActivityMessageController);
+router.post(
+  "/:id/chat/messages/:messageId/report",
+  requireAuth,
+  validateBody(z.object({ reason: z.string().min(3).max(255) })),
+  reportActivityMessageController
+);

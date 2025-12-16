@@ -182,6 +182,7 @@ export type Group = {
   visibility: "public" | "private";
   max_members?: number | null;
   members_count?: number;
+  role?: string;
   created_by: number;
   created_at: string;
   updated_at: string;
@@ -216,6 +217,9 @@ export const groupsApi = {
     const query = searchParams.toString();
     return unwrap(request(`/groups/search${query ? `?${query}` : ""}`), "groups");
   },
+
+  mine: (): Promise<Group[]> =>
+    unwrap(request("/groups/mine", { requiresAuth: true }), "groups"),
 
   getById: (id: number): Promise<Group> =>
     unwrap(request(`/groups/${id}`), "group"),

@@ -18,18 +18,15 @@ export function GroupsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Filters
-  const [filterCity, setFilterCity] = useState("");
-  const [filterLevel, setFilterLevel] = useState("");
+  const [filterSport, setFilterSport] = useState("");
+  const [filterLevels, setFilterLevels] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const params: { city?: string; level?: string } = {};
-        if (filterCity) params.city = filterCity;
-        if (filterLevel) params.level = filterLevel;
-        const data = await groupsApi.search(params);
+        const data = await groupsApi.search({});
         setGroups(data);
       } catch (e: any) {
         setError(e.message || "Impossible de charger les groupes.");
@@ -39,7 +36,26 @@ export function GroupsPage() {
     };
 
     fetchGroups();
-  }, [filterCity, filterLevel]);
+  }, []);
+
+  const filteredGroups = groups.filter((group) => {
+    const matchesSport = (() => {
+      if (!filterSport.trim()) return true;
+      const sportName = group.sport_name || "";
+      return sportName.toLowerCase().includes(filterSport.toLowerCase());
+    })();
+
+    const matchesLevel =
+      filterLevels.length === 0 || filterLevels.includes(group.level);
+
+    return matchesSport && matchesLevel;
+  });
+
+  const toggleLevel = (level: string) => {
+    setFilterLevels((prev) =>
+      prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level]
+    );
+  };
 
   const handleJoinGroup = async (groupId: number) => {
     if (!isAuthenticated) {
@@ -76,21 +92,31 @@ export function GroupsPage() {
           <div className="flex flex-wrap gap-(--space-2)">
             <input
               type="text"
-              placeholder="Filtrer par ville..."
-              value={filterCity}
-              onChange={(e) => setFilterCity(e.target.value)}
+              placeholder="Filtrer par sport..."
+              value={filterSport}
+              onChange={(e) => setFilterSport(e.target.value)}
               className="rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
             />
-            <select
-              value={filterLevel}
-              onChange={(e) => setFilterLevel(e.target.value)}
-              className="rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-(--space-1) text-(length:--font-size-sm) outline-none focus:border-(--color-primary)"
-            >
-              <option value="">Tous les niveaux</option>
-              <option value="debutant">Debutant</option>
-              <option value="intermediaire">Intermediaire</option>
-              <option value="expert">Expert</option>
-            </select>
+            <div className="flex items-center gap-(--space-1)">
+              {([
+                ["debutant", "Debutant"],
+                ["intermediaire", "Intermediaire"],
+                ["expert", "Expert"],
+              ] as const).map(([value, label]) => (
+                <label
+                  key={value}
+                  className="flex items-center gap-1 rounded-xl border border-(--color-border-subtle) bg-(--color-bg) px-(--space-2) py-[6px] text-(length:--font-size-xs) cursor-pointer select-none hover:border-(--color-primary)"
+                >
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-(--color-primary)"
+                    checked={filterLevels.includes(value)}
+                    onChange={() => toggleLevel(value)}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
 
           {isLoading ? (
@@ -99,13 +125,13 @@ export function GroupsPage() {
             </p>
           ) : error ? (
             <p className="text-(length:--font-size-sm) text-red-400">{error}</p>
-          ) : groups.length === 0 ? (
+          ) : filteredGroups.length === 0 ? (
             <p className="text-(length:--font-size-sm) text-(--color-text-muted)">
               Aucun groupe trouve. Essaie de modifier tes filtres.
             </p>
           ) : (
             <div className="grid gap-(--space-3) md:grid-cols-3">
-              {groups.map((group) => (
+              {filteredGroups.map((group) => (
                 <article
                   key={group.id}
                   className="rounded-2xl border border-(--color-border-subtle) bg-(--color-surface-dark) p-(--space-2) space-y-(--space-1)"
